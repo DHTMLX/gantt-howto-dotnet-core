@@ -1,11 +1,11 @@
 dhtmlxGantt with ASP.NET Core
 =============
 
-ASP.NET Core 2 backend for dhtmlxGantt.
+ASP.NET Core backend for dhtmlxGantt.
 
 ### Requirements
 
-- MS VisualStudio 2017+
+- MS VisualStudio 2022
 
 ###Tutorial
 
