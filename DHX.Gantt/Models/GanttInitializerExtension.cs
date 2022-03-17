@@ -1,18 +1,17 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Hosting;
-
-namespace DHX.Gantt.Models
+﻿namespace DHX.Gantt.Models
 {
     public static class GanttInitializerExtension
     {
-        public static IWebHost InitializeDatabase(this IWebHost webHost)
+        public static IHost InitializeDatabase(this IHost webHost)
         {
-            var serviceScopeFactory = (IServiceScopeFactory)webHost.Services.GetService(typeof(IServiceScopeFactory));
+            var serviceScopeFactory =
+             (IServiceScopeFactory?)webHost.Services.GetService(typeof(IServiceScopeFactory));
 
-            using (var scope = serviceScopeFactory.CreateScope())
+            using (var scope = serviceScopeFactory!.CreateScope())
             {
                 var services = scope.ServiceProvider;
                 var dbContext = services.GetRequiredService<GanttContext>();
+                dbContext.Database.EnsureDeleted();
                 dbContext.Database.EnsureCreated();
                 GanttSeeder.Seed(dbContext);
             }

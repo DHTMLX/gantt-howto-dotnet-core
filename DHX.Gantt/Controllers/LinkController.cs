@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
 using DHX.Gantt.Models;
 
@@ -27,16 +25,16 @@ namespace DHX.Gantt.Controllers
 
         // GET api/Link/5
         [HttpGet("{id}")]
-        public WebApiLink Get(int id)
+        public Link? Get(int id)
         {
-            return (WebApiLink)_context
+            return _context
                 .Links
                 .Find(id);
         }
 
         // POST api/Link
         [HttpPost]
-        public IActionResult Post(WebApiLink apiLink)
+        public ObjectResult Post(WebApiLink apiLink)
         {
             var newLink = (Link)apiLink;
 
@@ -52,11 +50,13 @@ namespace DHX.Gantt.Controllers
 
         // PUT api/Link/5
         [HttpPut("{id}")]
-        public IActionResult Put(int id, WebApiLink apiLink)
+        public ObjectResult Put(int id, WebApiLink apiLink)
         {
             var updatedLink = (Link)apiLink;
             updatedLink.Id = id;
             _context.Entry(updatedLink).State = EntityState.Modified;
+
+
             _context.SaveChanges();
 
             return Ok(new
@@ -67,7 +67,7 @@ namespace DHX.Gantt.Controllers
 
         // DELETE api/Link/5
         [HttpDelete("{id}")]
-        public IActionResult DeleteLink(int id)
+        public ObjectResult DeleteLink(int id)
         {
             var Link = _context.Links.Find(id);
             if (Link != null)
