@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using DHX.Gantt.Models;
 
 namespace DHX.Gantt.Controllers
@@ -27,9 +24,9 @@ namespace DHX.Gantt.Controllers
 
         // GET api/task/5
         [HttpGet("{id}")]
-        public WebApiTask Get(int id)
+        public Models.Task? Get(int id)
         {
-            return (WebApiTask)_context
+            return _context
                 .Tasks
                 .Find(id);
         }
@@ -38,7 +35,7 @@ namespace DHX.Gantt.Controllers
         [HttpPost]
         public IActionResult Post(WebApiTask apiTask)
         {
-            var newTask = (Task)apiTask;
+            var newTask = (Models.Task)apiTask;
 
             newTask.SortOrder = _context.Tasks.Max(t => t.SortOrder) + 1;
             _context.Tasks.Add(newTask);
@@ -53,12 +50,18 @@ namespace DHX.Gantt.Controllers
 
         // PUT api/task/5
         [HttpPut("{id}")]
-        public IActionResult Put(int id, WebApiTask apiTask)
+        public IActionResult? Put(int id, WebApiTask apiTask)
         {
-            var updatedTask = (Task)apiTask;
+            var updatedTask = (Models.Task)apiTask;
             updatedTask.Id = id;
 
             var dbTask = _context.Tasks.Find(id);
+
+            if (dbTask == null)
+            {
+                return null;
+            }
+
             dbTask.Text = updatedTask.Text;
             dbTask.StartDate = updatedTask.StartDate;
             dbTask.Duration = updatedTask.Duration;
@@ -68,7 +71,7 @@ namespace DHX.Gantt.Controllers
 
             if (!string.IsNullOrEmpty(apiTask.target))
             {
-                // reordering occurred
+                // reordering occurred                         
                 this._UpdateOrders(dbTask, apiTask.target);
             }
 
@@ -82,7 +85,7 @@ namespace DHX.Gantt.Controllers
 
         // DELETE api/task/5
         [HttpDelete("{id}")]
-        public IActionResult DeleteTask(int id)
+        public ObjectResult DeleteTask(int id)
         {
             var task = _context.Tasks.Find(id);
             if (task != null)
@@ -97,7 +100,7 @@ namespace DHX.Gantt.Controllers
             });
         }
 
-        private void _UpdateOrders(Task updatedTask, string orderTarget)
+        private void _UpdateOrders(Models.Task updatedTask, string orderTarget)
         {
             int adjacentTaskId;
             var nextSibling = false;
@@ -118,7 +121,7 @@ namespace DHX.Gantt.Controllers
             }
 
             var adjacentTask = _context.Tasks.Find(adjacentTaskId);
-            var startOrder = adjacentTask.SortOrder;
+            var startOrder = adjacentTask!.SortOrder;
 
             if (nextSibling)
                 startOrder++;
@@ -126,9 +129,9 @@ namespace DHX.Gantt.Controllers
             updatedTask.SortOrder = startOrder;
 
             var updateOrders = _context.Tasks
-             .Where(t => t.Id != updatedTask.Id)
-             .Where(t => t.SortOrder >= startOrder)
-             .OrderBy(t => t.SortOrder);
+                .Where(t => t.Id != updatedTask.Id)
+                .Where(t => t.SortOrder >= startOrder)
+                .OrderBy(t => t.SortOrder);
 
             var taskList = updateOrders.ToList();
 

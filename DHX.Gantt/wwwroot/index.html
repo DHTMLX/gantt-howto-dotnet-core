@@ -13,14 +13,14 @@
             gantt.config.order_branch_free = true;
 
             // specifying the date format
-            gantt.config.xml_date = "%Y-%m-%d %H:%i";
+            gantt.config.date_format = "%Y-%m-%d %H:%i";
             // initializing gantt
             gantt.init("gantt_here");
 
             // initiating data loading
             gantt.load("/api/data");
             // initializing dataProcessor
-            var dp = new gantt.dataProcessor("/api");
+            var dp = new gantt.dataProcessor("/api/");
             // and attaching it to gantt
             dp.init(gantt);
             // setting the REST mode for dataProcessor
