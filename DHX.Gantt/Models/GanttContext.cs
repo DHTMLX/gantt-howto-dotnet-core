@@ -8,8 +8,8 @@ namespace DHX.Gantt.Models
            : base(options)
         {
         }
-        public DbSet<Task> Tasks { get; set; }
-        public DbSet<Link> Links { get; set; }
+        public DbSet<Task> Tasks { get; set; } = null!;
+        public DbSet<Link> Links { get; set; } = null!;
 
     }
 }

@@ -3,7 +3,7 @@
     public class WebApiLink
     {
         public int id { get; set; }
-        public string type { get; set; }
+        public string? type { get; set; }
         public int source { get; set; }
         public int target { get; set; }
 

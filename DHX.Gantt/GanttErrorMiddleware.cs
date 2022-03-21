@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace DHX.Gantt
 {
@@ -23,15 +17,16 @@ namespace DHX.Gantt
             try
             {
                 await _next(httpContext);
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 await HandleExceptionAsync(httpContext, e);
             }
-            
         }
         private static Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
-            var result = JsonConvert.SerializeObject(new {
+            var result = JsonConvert.SerializeObject(new
+            {
                 action = "error"
             });
             context.Response.ContentType = "application/json";

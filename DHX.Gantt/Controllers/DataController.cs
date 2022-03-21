@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using DHX.Gantt.Models;
 
 namespace DHX.Gantt.Controllers
@@ -23,15 +20,14 @@ namespace DHX.Gantt.Controllers
             return new
             {
                 data = _context.Tasks
-                    .OrderBy(t => t.SortOrder)
-                    .ToList()
-                    .Select(t => (WebApiTask)t),
+                   .OrderBy(t => t.SortOrder)
+                   .ToList()
+                   .Select(t => (WebApiTask)t),
                 links = _context.Links
-                    .ToList()
-                    .Select(l => (WebApiLink)l)
-
+                   .ToList()
+                   .Select(l => (WebApiLink)l)
             };
         }
-        
+
     }
 }
