@@ -1,34 +1,32 @@
 ﻿<!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta name="viewport" content="width=device-width" />
     <title>Index</title>
-    <link href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css"
-          rel="stylesheet" type="text/css" />
+    <link href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css" rel="stylesheet" type="text/css" />
+    <link href="css/site.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function (event) {
+      document.addEventListener('DOMContentLoaded', function () {
+        gantt.config.order_branch = true;
+        gantt.config.order_branch_free = true;
 
-            gantt.config.order_branch = true;
-            gantt.config.order_branch_free = true;
+        // specifying the date format
+        gantt.config.date_format = '%Y-%m-%d %H:%i';
+        // initializing gantt
+        gantt.init('gantt_here');
 
-            // specifying the date format
-            gantt.config.date_format = "%Y-%m-%d %H:%i";
-            // initializing gantt
-            gantt.init("gantt_here");
-
-            // initiating data loading
-            gantt.load("/api/data");
-            // initializing dataProcessor
-            var dp = new gantt.dataProcessor("/api/");
-            // and attaching it to gantt
-            dp.init(gantt);
-            // setting the REST mode for dataProcessor
-            dp.setTransactionMode("REST");
+        // initiating data loading
+        gantt.load('/api/data');
+        // creating and configuring dataProcessor
+        const dp = gantt.createDataProcessor({
+          url: '/api/',
+          mode: 'REST',
         });
+      });
     </script>
-</head>
-<body>
-    <div id="gantt_here" style="width: 100%; height: 100vh;"></div>
-</body>
+  </head>
+  <body>
+    <div id="gantt_here" style="width: 100vw; height: 100vh"></div>
+  </body>
 </html>

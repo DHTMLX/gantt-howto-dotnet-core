@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using DHX.Gantt.Models;
 
 namespace DHX.Gantt.Controllers
 {
     [Produces("application/json")]
     [Route("api/data")]
-    public class DataController : Controller
+    public class DataController : ControllerBase
     {
         private readonly GanttContext _context;
         public DataController(GanttContext context)
@@ -15,18 +16,22 @@ namespace DHX.Gantt.Controllers
 
         // GET api/data
         [HttpGet]
-        public object Get()
+        public async Task<IActionResult> Get()
         {
-            return new
+            var tasks = await _context.Tasks
+                .OrderBy(t => t.SortOrder)
+                .Select(t => (WebApiTask)t)
+                .ToListAsync();
+
+            var links = await _context.Links
+                .Select(l => (WebApiLink)l)
+                .ToListAsync();
+
+            return Ok(new
             {
-                data = _context.Tasks
-                   .OrderBy(t => t.SortOrder)
-                   .ToList()
-                   .Select(t => (WebApiTask)t),
-                links = _context.Links
-                   .ToList()
-                   .Select(l => (WebApiLink)l)
-            };
+                tasks,
+                links
+            });
         }
 
     }

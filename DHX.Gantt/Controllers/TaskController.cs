@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using DHX.Gantt.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace DHX.Gantt.Controllers
 {
     [Produces("application/json")]
     [Route("api/task")]
-    public class TaskController : Controller
+    public class TaskController : ControllerBase
     {
         private readonly GanttContext _context;
         public TaskController(GanttContext context)
@@ -15,31 +16,34 @@ namespace DHX.Gantt.Controllers
 
         // GET api/task
         [HttpGet]
-        public IEnumerable<WebApiTask> Get()
+        public async Task<IEnumerable<WebApiTask>> Get()
         {
-            return _context.Tasks
-                .ToList()
-                .Select(t => (WebApiTask)t);
+            return await _context.Tasks
+                .Select(t => (WebApiTask)t)
+                .ToListAsync();
         }
 
         // GET api/task/5
         [HttpGet("{id}")]
-        public Models.Task? Get(int id)
+        public async Task<ActionResult<Models.Task>> Get(int id)
         {
-            return _context
-                .Tasks
-                .Find(id);
+            var task = await _context.Tasks.FindAsync(id);
+
+            if (task == null)
+                return NotFound();
+
+            return Ok(task);
         }
 
         // POST api/task
         [HttpPost]
-        public IActionResult Post(WebApiTask apiTask)
+        public async Task<IActionResult> Post(WebApiTask apiTask)
         {
             var newTask = (Models.Task)apiTask;
 
-            newTask.SortOrder = _context.Tasks.Max(t => t.SortOrder) + 1;
-            _context.Tasks.Add(newTask);
-            _context.SaveChanges();
+            newTask.SortOrder = await _context.Tasks.MaxAsync(t => t.SortOrder) + 1;
+            await _context.Tasks.AddAsync(newTask);
+            await _context.SaveChangesAsync();
 
             return Ok(new
             {
@@ -50,16 +54,14 @@ namespace DHX.Gantt.Controllers
 
         // PUT api/task/5
         [HttpPut("{id}")]
-        public IActionResult? Put(int id, WebApiTask apiTask)
+        public async Task<IActionResult?> Put(int id, WebApiTask apiTask)
         {
             var updatedTask = (Models.Task)apiTask;
-            updatedTask.Id = id;
-
-            var dbTask = _context.Tasks.Find(id);
+            var dbTask = await _context.Tasks.FindAsync(id);
 
             if (dbTask == null)
             {
-                return null;
+                return NotFound();
             }
 
             dbTask.Text = updatedTask.Text;
@@ -72,10 +74,10 @@ namespace DHX.Gantt.Controllers
             if (!string.IsNullOrEmpty(apiTask.target))
             {
                 // reordering occurred                         
-                this._UpdateOrders(dbTask, apiTask.target);
+                await this.UpdateOrdersAsync(dbTask, apiTask.target);
             }
 
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             return Ok(new
             {
@@ -85,13 +87,13 @@ namespace DHX.Gantt.Controllers
 
         // DELETE api/task/5
         [HttpDelete("{id}")]
-        public ObjectResult DeleteTask(int id)
+        public async Task<IActionResult> DeleteTask(int id)
         {
-            var task = _context.Tasks.Find(id);
+            var task = await _context.Tasks.FindAsync(id);
             if (task != null)
             {
                 _context.Tasks.Remove(task);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
 
             return Ok(new
@@ -100,7 +102,7 @@ namespace DHX.Gantt.Controllers
             });
         }
 
-        private void _UpdateOrders(Models.Task updatedTask, string orderTarget)
+        private async Task<IActionResult> UpdateOrdersAsync(Models.Task updatedTask, string orderTarget)
         {
             int adjacentTaskId;
             var nextSibling = false;
@@ -117,25 +119,34 @@ namespace DHX.Gantt.Controllers
 
             if (!int.TryParse(targetId, out adjacentTaskId))
             {
-                return;
+                return NotFound();
             }
 
-            var adjacentTask = _context.Tasks.Find(adjacentTaskId);
-            var startOrder = adjacentTask!.SortOrder;
+            var adjacentTask = await _context.Tasks.FindAsync(adjacentTaskId);
+            if (adjacentTask == null)
+            {
+                return NotFound();
+            }
+            var startOrder = adjacentTask.SortOrder;
 
             if (nextSibling)
                 startOrder++;
 
             updatedTask.SortOrder = startOrder;
 
-            var updateOrders = _context.Tasks
+            var updateOrders = await _context.Tasks
                 .Where(t => t.Id != updatedTask.Id)
                 .Where(t => t.SortOrder >= startOrder)
-                .OrderBy(t => t.SortOrder);
+                .OrderBy(t => t.SortOrder)
+                .ToListAsync();
 
             var taskList = updateOrders.ToList();
-
             taskList.ForEach(t => t.SortOrder++);
+
+            return Ok(new
+            {
+                action = "updated"
+            });
         }
     }
 }
